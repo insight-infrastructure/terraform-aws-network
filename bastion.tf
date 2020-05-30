@@ -99,7 +99,7 @@ locals {
 }
 
 data "template_file" "user_data" {
-  template = file("${path.module}/user_data.sh")
+  template = file("${path.module}/bastion-user-data.sh")
 
   vars = {
     aws_region              = data.aws_region.this
@@ -216,14 +216,14 @@ data "aws_iam_policy_document" "bastion_host_policy_document" {
       "s3:PutObject",
       "s3:PutObjectAcl"
     ]
-    resources = ["${aws_s3_bucket.bucket.arn}/logs/*"]
+    resources = ["${join("", aws_s3_bucket.bucket.*.arn)}/logs/*"]
   }
 
   statement {
     actions = [
       "s3:GetObject"
     ]
-    resources = ["${aws_s3_bucket.bucket.arn}/public-keys/*"]
+    resources = ["${join("", aws_s3_bucket.bucket.*.arn)}/public-keys/*"]
   }
 
   statement {
@@ -231,7 +231,7 @@ data "aws_iam_policy_document" "bastion_host_policy_document" {
       "s3:ListBucket"
     ]
     resources = [
-    aws_s3_bucket.bucket.arn]
+    join("", aws_s3_bucket.bucket.*.arn)]
 
     condition {
       test     = "ForAnyValue:StringEquals"

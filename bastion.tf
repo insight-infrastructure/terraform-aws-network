@@ -16,6 +16,12 @@ variable "bastion_monitoring_enabled" {
   default     = true
 }
 
+variable "public_key_paths" {
+  description = "List of paths to public ssh keys"
+  type        = list(string)
+  default     = []
+}
+
 ####
 # S3
 ####
@@ -91,18 +97,24 @@ variable "domain_name" {
   default     = ""
 }
 
+variable "bastion_host_name" {
+  description = "The hostname for bastion"
+  type        = string
+  default     = "bastion"
+}
+
 data "aws_region" "this" {}
 data "aws_caller_identity" "this" {}
 
 locals {
-  bucket_name = var.bucket_name == "" ? "logs-${data.aws_caller_identity.this}" : var.bucket_name
+  bucket_name = var.bucket_name == "" ? "logs-${data.aws_caller_identity.this.account_id}" : var.bucket_name
 }
 
 data "template_file" "user_data" {
   template = file("${path.module}/bastion-user-data.sh")
 
   vars = {
-    aws_region              = data.aws_region.this
+    aws_region              = data.aws_region.this.name
     bucket_name             = local.bucket_name
     extra_user_data_content = var.extra_user_data_content
     allow_ssh_commands      = var.allow_ssh_commands
@@ -171,12 +183,21 @@ resource "aws_s3_bucket" "bucket" {
   tags = merge(var.tags)
 }
 
-resource "aws_s3_bucket_object" "keys" {
+resource "aws_s3_bucket_object" "keys_readme" {
   count = var.create && var.enable_bastion ? 1 : 0
 
   bucket     = join("", aws_s3_bucket.bucket.*.id)
   key        = "public-keys/README.txt"
   content    = "Drop here the ssh public keys of the instances you want to control"
+  kms_key_id = join("", aws_kms_key.key.*.arn)
+}
+
+resource "aws_s3_bucket_object" "keys_uploads" {
+  count = var.create && var.enable_bastion ? length(var.public_key_paths) : 0
+
+  bucket     = join("", aws_s3_bucket.bucket.*.id)
+  key        = "public-keys/${basename(var.public_key_paths[count.index])}"
+  content    = file(var.public_key_paths[count.index])
   kms_key_id = join("", aws_kms_key.key.*.arn)
 }
 
@@ -245,7 +266,7 @@ data "aws_iam_policy_document" "bastion_host_policy_document" {
       "kms:Encrypt",
       "kms:Decrypt"
     ]
-    resources = [aws_kms_key.key.arn]
+    resources = [join("", aws_kms_key.key.*.arn)]
   }
 
 }
@@ -260,24 +281,25 @@ resource "aws_iam_policy" "bastion_host_policy" {
 resource "aws_iam_role_policy_attachment" "bastion_host" {
   count = var.create && var.enable_bastion ? 1 : 0
 
-  policy_arn = join("", aws_iam_policy.bastion_host_policy.arn)
-  role       = join("", aws_iam_role.bastion_host_role.name)
+  policy_arn = join("", aws_iam_policy.bastion_host_policy.*.arn)
+  role       = join("", aws_iam_role.bastion_host_role.*.name)
 }
 
-data "aws_route53_zone" "this" {
-  count = var.domain_name == "" ? 0 : 1
-  name  = "${var.domain_name}."
+locals {
+  bastion_dns_record = "${var.bastion_host_name}.${var.domain_name}"
 }
 
-//resource "aws_route53_record" "bastion_record_name" {
-//  count   = var.create_dns_record ? 1 : 0
-//
-//  name    = var.bastion_record_name
-//  zone_id = var.hosted_zone_id
-//  type    = "A"
-//}
+resource "aws_route53_record" "bastion_record_name" {
+  count = var.domain_name != "" && var.create && var.enable_bastion ? 1 : 0
 
-resource "aws_eip" "this" {
+  name    = local.bastion_dns_record
+  zone_id = join("", data.aws_route53_zone.this.*.id)
+  type    = "A"
+  ttl     = 300
+  records = [join("", aws_eip.bastion.*.public_ip)]
+}
+
+resource "aws_eip" "bastion" {
   count = var.create && var.enable_bastion ? 1 : 0
   tags  = var.tags
 }
@@ -293,7 +315,7 @@ resource "aws_instance" "this" {
   instance_type          = var.instance_type
   user_data              = data.template_file.user_data.rendered
   subnet_id              = module.vpc.public_subnets[0]
-  vpc_security_group_ids = [aws_security_group.public.id]
+  vpc_security_group_ids = [join("", aws_security_group.public.*.id)]
   monitoring             = var.bastion_monitoring_enabled
 
   tags = var.tags

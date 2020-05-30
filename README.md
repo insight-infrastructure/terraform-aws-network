@@ -41,13 +41,23 @@ No issue is creating limit on this module.
 | cidr | The cidr range for network | `string` | `"10.0.0.0/16"` | no |
 | create | Bool to create | `bool` | `true` | no |
 | id | The id of the resources | `string` | n/a | yes |
+| ingress\_tcp\_public | List of tcp ports for public ingress | `list(string)` | <pre>[<br>  22<br>]</pre> | no |
+| ingress\_udp\_public | List of udp ports for public ingress | `list(string)` | <pre>[<br>  22<br>]</pre> | no |
 | num\_azs | The number of AZs to deploy into | `number` | `3` | no |
 | tags | Tags for resources | `map(string)` | `{}` | no |
 | vpc\_name | The name of the VPC | `string` | `""` | no |
 
 ## Outputs
 
-No output.
+| Name | Description |
+|------|-------------|
+| azs | n/a |
+| private\_subnets | n/a |
+| private\_subnets\_cidr\_blocks | n/a |
+| public\_subnet\_cidr\_blocks | n/a |
+| public\_subnets | n/a |
+| security\_group\_id | #### sgs #### |
+| vpc\_id | #### VPC #### |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

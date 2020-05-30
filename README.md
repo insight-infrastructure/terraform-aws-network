@@ -76,7 +76,8 @@ No issue is creating limit on this module.
 | private\_subnets\_cidr\_blocks | n/a |
 | public\_subnet\_cidr\_blocks | n/a |
 | public\_subnets | n/a |
-| security\_group\_id | #### sgs #### |
+| sg\_bastion\_id | n/a |
+| sg\_public\_id | #### sgs #### |
 | vpc\_id | #### VPC #### |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

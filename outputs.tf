@@ -1,8 +1,12 @@
 #####
 # sgs
 #####
-output "security_group_id" {
-  value = join("", aws_security_group.this.*.id)
+output "sg_public_id" {
+  value = join("", aws_security_group.public.*.id)
+}
+
+output "sg_bastion_id" {
+  value = join("", aws_security_group.bastion.*.id)
 }
 
 

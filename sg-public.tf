@@ -11,7 +11,7 @@ variable "ingress_udp_public" {
   default     = [22]
 }
 
-resource "aws_security_group" "this" {
+resource "aws_security_group" "public" {
   count = var.create ? 1 : 0
 
   name = var.id
@@ -38,7 +38,7 @@ resource "aws_security_group" "this" {
 resource "aws_security_group_rule" "ingress_tcp_rules" {
   count = var.create ? length(var.ingress_tcp_public) : 0
 
-  security_group_id = join("", aws_security_group.this.*.id)
+  security_group_id = join("", aws_security_group.public.*.id)
   type              = "ingress"
 
   cidr_blocks = ["0.0.0.0/0"]
@@ -52,7 +52,7 @@ resource "aws_security_group_rule" "ingress_tcp_rules" {
 resource "aws_security_group_rule" "ingress_udp_rules" {
   count = var.create ? length(var.ingress_udp_public) : 0
 
-  security_group_id = join("", aws_security_group.this.*.id)
+  security_group_id = join("", aws_security_group.public.*.id)
   type              = "ingress"
 
   cidr_blocks = ["0.0.0.0/0"]

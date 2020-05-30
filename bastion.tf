@@ -293,7 +293,7 @@ resource "aws_instance" "this" {
   instance_type          = var.instance_type
   user_data              = data.template_file.user_data.rendered
   subnet_id              = module.vpc.public_subnets[0]
-  vpc_security_group_ids = [aws_security_group.this.id]
+  vpc_security_group_ids = [aws_security_group.public.id]
   monitoring             = var.bastion_monitoring_enabled
 
   tags = var.tags

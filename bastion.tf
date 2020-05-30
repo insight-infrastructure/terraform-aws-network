@@ -10,6 +10,12 @@
 //  default = "t2.nano"
 //}
 //
+//variable "bastion_monitoring_enabled" {
+//  description = "Cloudwatch monitoring on bastion"
+//  type = bool
+//  default = true
+//}
+//
 //####
 //# S3
 //####
@@ -79,8 +85,10 @@
 //#####
 //# DNS
 //#####
-//variable "root_domain" {
+//variable "domain_name" {
 //  description = ""
+//  type = string
+//  default = ""
 //}
 //
 //data "aws_region" "this" {}
@@ -102,22 +110,26 @@
 //}
 //
 //resource "aws_kms_key" "key" {
+//  count         = var.create && var.enable_bastion ? 1 : 0
 //  tags = merge(var.tags)
 //}
 //
 //resource "aws_kms_alias" "alias" {
+//  count         = var.create && var.enable_bastion ? 1 : 0
 //  name          = "alias/${local.bucket_name}"
-//  target_key_id = aws_kms_key.key.arn
+//  target_key_id = join("", aws_kms_key.key.*.arn)
 //}
 //
 //resource "aws_s3_bucket" "bucket" {
+//  count         = var.create && var.enable_bastion ? 1 : 0
+//
 //  bucket = local.bucket_name
 //  acl    = "bucket-owner-full-control"
 //
 //  server_side_encryption_configuration {
 //    rule {
 //      apply_server_side_encryption_by_default {
-//        kms_master_key_id = aws_kms_key.key.id
+//        kms_master_key_id = join("", aws_kms_key.key.*.id)
 //        sse_algorithm     = "aws:kms"
 //      }
 //    }
@@ -159,58 +171,23 @@
 //  tags = merge(var.tags)
 //}
 //
-//resource "aws_s3_bucket_object" "bucket_public_keys_readme" {
-//  bucket     = aws_s3_bucket.bucket.id
+//resource "aws_s3_bucket_object" "keys" {
+//  count         = var.create && var.enable_bastion ? 1 : 0
+//
+//  bucket     = join("", aws_s3_bucket.bucket.*.id)
 //  key        = "public-keys/README.txt"
 //  content    = "Drop here the ssh public keys of the instances you want to control"
-//  kms_key_id = aws_kms_key.key.arn
+//  kms_key_id = join("", aws_kms_key.key.*.arn)
 //}
 //
-//resource "aws_security_group" "bastion_host_security_group" {
+//resource "aws_security_group" "bastion" {
+//  count         = var.create && var.enable_bastion ? 1 : 0
+//
 //  description = "Enable SSH access to the bastion host from external via SSH port"
-//  name        = "${local.name_prefix}-host"
+//  name        = ""
 //  vpc_id      = module.vpc.vpc_id
-//
-//  tags = merge(var.tags)
-//}
-//
-//resource "aws_security_group_rule" "ingress_bastion" {
-//  description = "Incoming traffic to bastion"
-//  type        = "ingress"
-//  from_port   = var.public_ssh_port
-//  to_port     = var.public_ssh_port
-//  protocol    = "TCP"
-//  cidr_blocks = concat(data.aws_subnet.subnets.*.cidr_block, var.cidrs)
-//
-//  security_group_id = aws_security_group.bastion_host_security_group.id
-//}
-//
-//resource "aws_security_group" "private_instances_security_group" {
-//  description = "Enable SSH access to the Private instances from the bastion via SSH port"
-//  name        = "${local.name_prefix}-priv-instances"
-//  vpc_id      = module.vpc.vpc_id
-//
-//  egress {
-//    from_port = 0
-//    to_port   = 0
-//    protocol  = "-1"
-//    cidr_blocks = [
-//      "0.0.0.0/0"]
-//  }
 //
 //  tags = var.tags
-//}
-//
-//resource "aws_security_group_rule" "ingress_instances" {
-//  description = "Incoming traffic from bastion"
-//  type        = "ingress"
-//  from_port   = var.public_ssh_port
-//  to_port     = var.public_ssh_port
-//  protocol    = "TCP"
-//
-//  source_security_group_id = aws_security_group.bastion_host_security_group.id
-//
-//  security_group_id = aws_security_group.private_instances_security_group.id
 //}
 //
 //data "aws_iam_policy_document" "assume_policy_document" {
@@ -226,6 +203,8 @@
 //}
 //
 //resource "aws_iam_role" "bastion_host_role" {
+//  count         = var.create && var.enable_bastion ? 1 : 0
+//
 //  path               = "/"
 //  assume_role_policy = data.aws_iam_policy_document.assume_policy_document.json
 //}
@@ -272,13 +251,17 @@
 //}
 //
 //resource "aws_iam_policy" "bastion_host_policy" {
+//  count         = var.create && var.enable_bastion ? 1 : 0
+//
 //  name   = "BastionHost"
 //  policy = data.aws_iam_policy_document.bastion_host_policy_document.json
 //}
 //
 //resource "aws_iam_role_policy_attachment" "bastion_host" {
-//  policy_arn = aws_iam_policy.bastion_host_policy.arn
-//  role       = aws_iam_role.bastion_host_role.name
+//  count         = var.create && var.enable_bastion ? 1 : 0
+//
+//  policy_arn = join("", aws_iam_policy.bastion_host_policy.arn)
+//  role       = join("", aws_iam_role.bastion_host_role.name)
 //}
 //
 //data "aws_route53_zone" "this" {
@@ -295,6 +278,7 @@
 ////}
 //
 //resource "aws_eip" "this" {
+//  count         = var.create && var.enable_bastion ? 1 : 0
 //  tags = var.tags
 //}
 //
@@ -304,6 +288,14 @@
 //
 //resource "aws_instance" "this" {
 //  count         = var.create && var.enable_bastion ? 1 : 0
+//
 //  ami           = module.ami.ubuntu_2004_ami_id
 //  instance_type = var.instance_type
+//  user_data = data.template_file.user_data.rendered
+//  subnet_id = module.vpc.public_subnets[0]
+//  vpc_security_group_ids = [aws_security_group.this.id]
+//  monitoring = var.bastion_monitoring_enabled
+//
+//  tags = var.tags
 //}
+//

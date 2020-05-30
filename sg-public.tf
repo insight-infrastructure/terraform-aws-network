@@ -41,9 +41,9 @@ resource "aws_security_group_rule" "ingress_tcp_rules" {
   security_group_id = join("", aws_security_group.this.*.id)
   type              = "ingress"
 
-  cidr_blocks = "0.0.0.0/0"
+  cidr_blocks = ["0.0.0.0/0"]
   protocol    = "tcp"
-  description = "rule for port ${var.ingress_tcp_public[count.index]}"
+  description = "tcp rule for port ${var.ingress_tcp_public[count.index]}"
 
   from_port = var.ingress_tcp_public[count.index]
   to_port   = var.ingress_tcp_public[count.index]
@@ -55,9 +55,9 @@ resource "aws_security_group_rule" "ingress_udp_rules" {
   security_group_id = join("", aws_security_group.this.*.id)
   type              = "ingress"
 
-  cidr_blocks = "0.0.0.0/0"
+  cidr_blocks = ["0.0.0.0/0"]
   protocol    = "udp"
-  description = "rule for port ${var.ingress_udp_public[count.index]}"
+  description = "udp rule for port ${var.ingress_udp_public[count.index]}"
 
   from_port = var.ingress_udp_public[count.index]
   to_port   = var.ingress_udp_public[count.index]

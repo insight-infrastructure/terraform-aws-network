@@ -37,7 +37,6 @@ No issue is creating limit on this module.
 | Name | Version |
 |------|---------|
 | aws | n/a |
-| template | n/a |
 
 ## Inputs
 
@@ -46,7 +45,6 @@ No issue is creating limit on this module.
 | azs | List of availability zones | `list(string)` | `[]` | no |
 | cidr | The cidr range for network | `string` | `"10.0.0.0/16"` | no |
 | create | Bool to create | `bool` | `true` | no |
-| enable\_bastion | Bool to enable bastion | `bool` | `true` | no |
 | id | The id of the resources | `string` | n/a | yes |
 | ingress\_tcp\_public | List of tcp ports for public ingress | `list(string)` | <pre>[<br>  22<br>]</pre> | no |
 | ingress\_udp\_public | List of udp ports for public ingress | `list(string)` | <pre>[<br>  22<br>]</pre> | no |

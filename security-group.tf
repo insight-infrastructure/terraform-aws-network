@@ -19,29 +19,7 @@ resource "aws_security_group" "this" {
 
   vpc_id = module.vpc.vpc_id
 
-  dynamic "ingress" {
-    for_each = var.ingress_tcp_public
-
-    content {
-      from_port = ingress.value
-      to_port   = ingress.value
-      protocol  = "tcp"
-      cidr_blocks = [
-      "0.0.0.0/0"]
-    }
-  }
-
-  dynamic "ingress" {
-    for_each = var.ingress_udp_public
-
-    content {
-      from_port = ingress.value
-      to_port   = ingress.value
-      protocol  = "udp"
-      cidr_blocks = [
-      "0.0.0.0/0"]
-    }
-  }
+  self = true
 
   egress {
     from_port = 0
@@ -50,4 +28,32 @@ resource "aws_security_group" "this" {
     cidr_blocks = [
     "0.0.0.0/0"]
   }
+}
+
+resource "aws_security_group_rule" "ingress_tcp_rules" {
+  count = var.create ? length(var.ingress_tcp_public) : 0
+
+  security_group_id = join("", aws_security_group.this.*.id)
+  type              = "ingress"
+
+  cidr_blocks = "0.0.0.0/0"
+  protocol    = "tcp"
+  description = "rule for port ${var.ingress_tcp_public[count.index]}"
+
+  from_port = var.ingress_tcp_public[count.index]
+  to_port   = var.ingress_tcp_public[count.index]
+}
+
+resource "aws_security_group_rule" "ingress_udp_rules" {
+  count = var.create ? length(var.ingress_udp_public) : 0
+
+  security_group_id = join("", aws_security_group.this.*.id)
+  type              = "ingress"
+
+  cidr_blocks = "0.0.0.0/0"
+  protocol    = "udp"
+  description = "rule for port ${var.ingress_udp_public[count.index]}"
+
+  from_port = var.ingress_udp_public[count.index]
+  to_port   = var.ingress_udp_public[count.index]
 }

@@ -29,11 +29,21 @@ No issue is creating limit on this module.
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Providers
 
-No provider.
+| Name | Version |
+|------|---------|
+| aws | n/a |
 
 ## Inputs
 
-No input.
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:-----:|
+| azs | List of availability zones | `list(string)` | `[]` | no |
+| cidr | The cidr range for network | `string` | `"10.0.0.0/16"` | no |
+| create | Bool to create | `bool` | `true` | no |
+| id | The id of the resources | `string` | n/a | yes |
+| num\_azs | The number of AZs to deploy into | `number` | `3` | no |
+| tags | Tags for resources | `map(string)` | `{}` | no |
+| vpc\_name | The name of the VPC | `string` | `""` | no |
 
 ## Outputs
 

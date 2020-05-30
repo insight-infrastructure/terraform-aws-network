@@ -5,7 +5,8 @@
 
 ## Features
 
-This module...
+This module deploys a network and security group with dynamic availability zones and a single security group 
+that takes a list of ports for both udp and tcp public access. 
 
 ## Terraform Versions
 
@@ -13,10 +14,14 @@ For Terraform v0.12.0+
 
 ## Usage
 
-```
-module "this" {
-    source = "github.com/insight-infrastructure/terraform-aws-network"
+```hcl-terraform
+resource "random_pet" "this" {
+  length = 2
+}
 
+module "defaults" {
+  source = "../.."
+  id     = random_pet.this.id
 }
 ```
 ## Examples

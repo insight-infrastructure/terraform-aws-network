@@ -83,6 +83,7 @@ No issue is creating limit on this module.
 | Name | Description |
 |------|-------------|
 | azs | n/a |
+| key\_names | ######## Bastion ######## |
 | private\_subnets | n/a |
 | private\_subnets\_cidr\_blocks | n/a |
 | public\_subnet\_cidr\_blocks | n/a |

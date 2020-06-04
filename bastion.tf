@@ -305,7 +305,14 @@ resource "aws_eip" "bastion" {
 }
 
 module "ami" {
-  source = "github.com/insight-infrastructure/terraform-aws-ami"
+  source = "github.com/insight-infrastructure/terraform-aws-ami.git"
+}
+
+resource "aws_key_pair" "bastion" {
+  count      = length(var.public_key_paths)
+  public_key = var.public_key_paths[count.index]
+  key_name   = basename(var.public_key_paths[count.index])
+  tags       = merge(var.tags, { name = basename(var.public_key_paths[count.index]) })
 }
 
 resource "aws_instance" "this" {

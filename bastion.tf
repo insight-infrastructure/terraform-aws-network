@@ -325,6 +325,6 @@ resource "aws_instance" "this" {
   vpc_security_group_ids = [join("", aws_security_group.public.*.id)]
   monitoring             = var.bastion_monitoring_enabled
 
-  tags = var.tags
+  tags = merge({ name = "bastion" }, var.tags)
 }
 

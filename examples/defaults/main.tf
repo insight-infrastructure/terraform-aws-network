@@ -7,12 +7,14 @@ provider "aws" {
 }
 
 resource "random_pet" "this" {
-  length = 2
+  length = 4
 }
 
 module "defaults" {
   source = "../.."
   id     = random_pet.this.id
+
+  bucket_name = random_pet.this.id
 
   ingress_tcp_public = [22, 80, 443]
 }

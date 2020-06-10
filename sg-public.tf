@@ -14,7 +14,7 @@ variable "ingress_udp_public" {
 resource "aws_security_group" "public" {
   count = var.create ? 1 : 0
 
-  name = var.id
+  name = "public-${var.id}"
   tags = var.tags
 
   vpc_id = module.vpc.vpc_id

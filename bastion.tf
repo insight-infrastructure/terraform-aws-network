@@ -205,7 +205,7 @@ resource "aws_security_group" "bastion" {
   count = var.create && var.enable_bastion ? 1 : 0
 
   description = "Enable SSH access to the bastion host from external via SSH port"
-  name        = ""
+  name        = "bation-${var.id}"
   vpc_id      = module.vpc.vpc_id
 
   tags = var.tags
@@ -274,7 +274,7 @@ data "aws_iam_policy_document" "bastion_host_policy_document" {
 resource "aws_iam_policy" "bastion_host_policy" {
   count = var.create && var.enable_bastion ? 1 : 0
 
-  name   = "BastionHost"
+  name   = "BastionHostS3Read${replace(title(replace(var.id, "-", " ")), " ", "")}Policy"
   policy = data.aws_iam_policy_document.bastion_host_policy_document.json
 }
 

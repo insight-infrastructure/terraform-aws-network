@@ -7,7 +7,7 @@ provider "aws" {
 }
 
 resource "random_pet" "this" {
-  length = 2
+  length = 5
 }
 
 module "defaults" {
@@ -19,5 +19,6 @@ module "defaults" {
     "${path.cwd}/test1.pub",
     "${path.cwd}/test2.pub"
   ]
+  bucket_name = random_pet.this.id
 }
 

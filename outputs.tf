@@ -44,3 +44,6 @@ output "azs" {
   value = module.vpc.azs
 }
 
+output "private_route_table_ids" {
+  value = module.vpc.private_route_table_ids
+}

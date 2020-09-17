@@ -5,6 +5,10 @@ output "sg_public_id" {
   value = join("", aws_security_group.public.*.id)
 }
 
+output "sg_k8s_workers_id" {
+  value = join("", aws_security_group.k8s_workers.*.id)
+}
+
 output "sg_bastion_id" {
   value = join("", aws_security_group.bastion.*.id)
 }

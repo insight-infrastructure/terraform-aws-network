@@ -91,6 +91,7 @@ No issue is creating limit on this module.
 | public\_subnet\_cidr\_blocks | n/a |
 | public\_subnets | n/a |
 | sg\_bastion\_id | n/a |
+| sg\_k8s\_workers\_id | n/a |
 | sg\_public\_id | #### sgs #### |
 | vpc\_id | #### VPC #### |
 
